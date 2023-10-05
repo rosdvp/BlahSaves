@@ -77,7 +77,7 @@ public class BlahSavesEditor
 		var path = $"{BlahSavesHelper.GetPath()}/{BlahSaveLoad.SAVES_FOLDER_NAME}";
 		
 		Directory.Delete(path, true);
-		PlayerPrefs.DeleteKey(BlahSaveLoad.PP_SAVE_FILE_CREATED);
+		PlayerPrefs.DeleteAll();
 		
 		Debug.Log("[BlahSaves] saves deleted");
 	}
