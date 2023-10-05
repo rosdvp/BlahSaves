@@ -36,7 +36,7 @@ public class BlahSaver
 	/// On success, applies patches provided via <see cref="AddPatch"/>.<br/>
 	/// On fail, creates new model.
 	/// </summary>
-	public T LoadOrCreate<T>() where T: class, new()
+	public T LoadOrCreate<T>() where T: class, IBlahSaveModelVersion, new()
 	{
 		_saveLoad.SetTarget(null, SAVE_FILE_NAME);
 		
