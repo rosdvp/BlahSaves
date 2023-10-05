@@ -1,9 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
-#if UNITY_EDITOR
 using System.IO;
 using OdinSerializer.Editor;
 using UnityEditor;
@@ -72,7 +71,7 @@ public class BlahSavesEditor
 		return types;
 	}
 
-	[MenuItem("Blah/Saves/Delete all")]
+	[MenuItem("Blah Saves/Delete all")]
 	public static void EditorDeleteAllSaves()
 	{
 		var path = $"{BlahSavesHelper.GetPath()}/{BlahSaveLoad.SAVES_FOLDER_NAME}";
@@ -83,7 +82,7 @@ public class BlahSavesEditor
 		Debug.Log("[BlahSaves] saves deleted");
 	}
 
-	[MenuItem("Blah/Saves/Delete main")]
+	[MenuItem("Blah Saves/Delete main")]
 	public static void EditorDeleteMainSave()
 	{
 		var path = $"{BlahSavesHelper.GetPath()}/{BlahSaveLoad.SAVES_FOLDER_NAME}";
@@ -102,7 +101,7 @@ public class BlahSavesEditor
 		Debug.Log("[BlahSaves] main save deleted");
 	}
 
-	[MenuItem("Blah/Saves/Delete backup")]
+	[MenuItem("Blah Saves/Delete backup")]
 	public static void EditorDeleteBackupSave()
 	{
 		var path = $"{BlahSavesHelper.GetPath()}/{BlahSaveLoad.SAVES_FOLDER_NAME}";
