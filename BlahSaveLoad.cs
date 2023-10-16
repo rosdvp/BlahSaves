@@ -11,12 +11,7 @@ public class BlahSaveLoad
 	public const string PP_SAVE_FILE_CREATED = "SaveFileCreated";
 	public const string SAVES_FOLDER_NAME    = "saves";
 	
-	private readonly string _baseDirPath;
-
-	public BlahSaveLoad()
-	{
-		_baseDirPath = $"{BlahSavesHelper.GetPath()}/{SAVES_FOLDER_NAME}";
-	}
+	private readonly string _baseDirPath = BlahSavesHelper.GetPath();
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
@@ -128,29 +123,27 @@ public class BlahSaveLoad
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	/// <summary>In base folder by default.</summary>>
-	/// <param name="folderName">If null, go to base folder.</param>
-	public void SetTarget(string folderName, string fileName)
+	/// <param name="subFolderName">If null, go to base folder.</param>
+	public void SetTarget(string folderName, string subFolderName, string fileName)
 	{
-		string subDirPath = folderName == null ? _baseDirPath : $"{_baseDirPath}/{folderName}";
+		folderName ??= SAVES_FOLDER_NAME;
+		
+		var path = $"{_baseDirPath}/{folderName}";
+		if (!Directory.Exists(path))
+			Directory.CreateDirectory(path);
+		if (subFolderName != null)
+		{
+			path = $"{path}/{subFolderName}";
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
+		}
 
-		if (!Directory.Exists(subDirPath))
-			Directory.CreateDirectory(subDirPath);
-
-		_currMainFilePath   = $"{subDirPath}/{fileName}";
-		_currBackupFilePath = $"{subDirPath}/b_{fileName}";
+		_currMainFilePath   = $"{path}/{fileName}";
+		_currBackupFilePath = $"{path}/b_{fileName}";
 	}
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 
-	public enum ELoadResult
-	{
-		MainLoaded,
-		MainLoadedNull,
-		BackupLoaded,
-		BackupLoadedNull,
-		SaveLost,
-		NoSave,
-	}
 }
 }

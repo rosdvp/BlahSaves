@@ -20,7 +20,7 @@ public class TestSaveLoad
 		saved.IntVal = 5;
 
 		saver.SaveMain(saved);
-		var loaded = saver.LoadOrCreate<Model>();
+		saver.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(5, loaded.IntVal);
 	}
@@ -41,7 +41,7 @@ public class TestSaveLoad
 		saved.IntVal = 10;
 		saver.SaveMain(saved);
 		
-		var loaded = saver.LoadOrCreate<Model>();
+		saver.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(10, loaded.IntVal);
 	}
@@ -66,7 +66,7 @@ public class TestSaveLoad
 		saved.IntVal = 5;
 
 		saver.SaveBackup(saved);
-		var loaded = saver.LoadOrCreate<Model>();
+		saver.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(5, loaded.IntVal);
 		Assert.IsTrue(logWarning.Contains("backup: success"));
@@ -97,7 +97,7 @@ public class TestSaveLoad
 		
 		BlahSavesEditor.EditorDeleteMainSave();
 		
-		var loaded = saver.LoadOrCreate<Model>();
+		saver.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(10, loaded.IntVal);
 		Assert.IsTrue(logWarning.Contains("backup: success"));
@@ -127,7 +127,7 @@ public class TestSaveLoad
 		BlahSavesEditor.EditorDeleteMainSave();
 		BlahSavesEditor.EditorDeleteBackupSave();
 		
-		var loaded = saver.LoadOrCreate<Model>();
+		saver.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(0, loaded.IntVal);
 		Assert.IsTrue(logError != null);
@@ -156,7 +156,7 @@ public class TestSaveLoad
 		saved.IntVal = 10;
 		saver.SaveBackup(saved);
 		
-		var loaded = saver.LoadOrCreate<Model>();
+		saver.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(10, loaded.IntVal);
 		Assert.IsTrue(logWarning.Contains("backup newer: success"));

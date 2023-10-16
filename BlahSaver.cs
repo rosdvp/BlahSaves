@@ -36,33 +36,35 @@ public class BlahSaver
 	/// On success, applies patches provided via <see cref="AddPatch"/>.<br/>
 	/// On fail, creates new model.
 	/// </summary>
-	public T LoadOrCreate<T>() where T: class, IBlahSaveModelVersion, new()
+	/// <param name="model">Loaded or created model.</param>
+	/// <returns>Result of operation.</returns>
+	public ELoadResult LoadOrCreate<T>(out T model) where T: class, IBlahSaveModelVersion, new()
 	{
-		_saveLoad.SetTarget(null, SAVE_FILE_NAME);
+		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
 		
 		var log = "load; ";
 
-		T   model  = null;
+		model = null;
 		var result = _saveLoad.TryLoad(ref model, ref log);
 
 		switch (result)
 		{
-			case BlahSaveLoad.ELoadResult.MainLoaded:
+			case ELoadResult.MainLoaded:
 				EvLogInfo?.Invoke(log);
 				break;
-			case BlahSaveLoad.ELoadResult.MainLoadedNull:
+			case ELoadResult.MainLoadedNull:
 				EvLogError?.Invoke(log);
 				break;
-			case BlahSaveLoad.ELoadResult.BackupLoaded:
+			case ELoadResult.BackupLoaded:
 				EvLogWarning?.Invoke(log);
 				break;
-			case BlahSaveLoad.ELoadResult.BackupLoadedNull:
+			case ELoadResult.BackupLoadedNull:
 				EvLogError?.Invoke(log);
 				break;
-			case BlahSaveLoad.ELoadResult.SaveLost:
+			case ELoadResult.SaveLost:
 				EvLogError?.Invoke(log);
 				break;
-			case BlahSaveLoad.ELoadResult.NoSave:
+			case ELoadResult.NoSave:
 				EvLogInfo?.Invoke(log);
 				break;
 			default:
@@ -76,15 +78,19 @@ public class BlahSaver
 			EvLogInfo?.Invoke(log);
 		}
 
-		return model ?? new T();
+		model ??= new T();
+		return result;
 	}
 
 	/// <summary>
 	/// Tries to load custom model without patching.
 	/// </summary>
-	public T TryLoadRaw<T>(string fileName) where T : class
+	/// <param name="folderName">Folder with saves. Use null for default.</param>
+	/// <param name="subFolderName">Folder in folder with saves. Use null if there is no such folder.</param>
+	/// <remarks>May return null.</remarks>
+	public T TryLoadRaw<T>(string folderName, string subFolderName, string fileName) where T : class
 	{
-		_saveLoad.SetTarget(null, fileName);
+		_saveLoad.SetTarget(folderName, subFolderName, fileName);
 
 		var log = "load raw; ";
 
@@ -101,7 +107,7 @@ public class BlahSaver
 	/// </summary>
 	public void SaveMain<T>(T model) where T : IBlahSaveModelVersion
 	{
-		_saveLoad.SetTarget(null, SAVE_FILE_NAME);
+		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
         
 		var log = "save main: ";
 		model.Version = _currVersion;
@@ -115,7 +121,7 @@ public class BlahSaver
 	/// </summary>
 	public void SaveBackup<T>(T model) where T : IBlahSaveModelVersion
 	{
-		_saveLoad.SetTarget(null, SAVE_FILE_NAME);
+		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
 
 		var log = "save backup: ";
 		model.Version = _currVersion;
@@ -126,10 +132,12 @@ public class BlahSaver
 	/// <summary>
 	/// Checks whether custom model exist.
 	/// </summary>
+	/// <param name="folderName">Folder with saves. Use null for default.</param>
+	/// <param name="subFolderName">Folder in folder with saves. Use null if there is no such folder.</param>
 	/// <remarks><b>Do not</b> use in common pipeline, only for complex patching.</remarks>
-	public bool IsSaveExist(string folderName, string fileName)
+	public bool IsSaveExist(string folderName, string subFolderName, string fileName)
 	{
-		_saveLoad.SetTarget(folderName, fileName);
+		_saveLoad.SetTarget(folderName, subFolderName, fileName);
 		return _saveLoad.IsMainExist() || _saveLoad.IsBackupExist();
 	}
 	

@@ -27,7 +27,7 @@ public class TestPatching
 		
 		saver.SaveMain(saved);
 
-		var loaded = loader.LoadOrCreate<Model>();
+		loader.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(5, loaded.IntVal);
 		Assert.AreEqual(true, loaded.BoolVal);
@@ -73,7 +73,7 @@ public class TestPatching
 		
 		saver.SaveMain(saved);
 
-		var loaded = loader.LoadOrCreate<Model>();
+		loader.LoadOrCreate(out Model loaded);
 		
 		Assert.AreEqual(8, loaded.IntVal);
 		Assert.AreEqual(true, loaded.BoolVal);
