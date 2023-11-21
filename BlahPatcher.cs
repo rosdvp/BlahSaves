@@ -18,8 +18,10 @@ public class BlahPatcher
 		);
 	}
 
-	public void ApplyPatches(object model, ref string log)
+	public void ApplyPatches(object model, out string log)
 	{
+		log = "";
+		
 		var counter = 0;
 		while (counter < 1000)
 		{

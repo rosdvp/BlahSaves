@@ -18,9 +18,7 @@ public class BlahSaver
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public event Action<string> EvLogInfo;
-	public event Action<string> EvLogWarning;
 	public event Action<string> EvLogError;
-	
 	
 	/// <summary>
 	/// If loaded model version is <paramref name="fromVersion"/>,
@@ -34,51 +32,45 @@ public class BlahSaver
 	/// <summary>
 	/// Tries to load the model from main save or backup.<br/>
 	/// On success, applies patches provided via <see cref="AddPatch"/>.<br/>
-	/// On fail, creates new model.
 	/// </summary>
-	/// <param name="model">Loaded or created model.</param>
-	/// <returns>Result of operation.</returns>
-	public ELoadResult LoadOrCreate<T>(out T model) where T: class, IBlahSaveModelVersion, new()
+	/// <param name="model">
+	/// On success, valid model.<br/>
+	/// On fail, null.
+	/// </param>
+	/// <param name="loadLog">
+	/// Supplementary logs for result.
+	/// Duplicates <see cref="EvLogInfo"/> and <see cref="EvLogError"/>.
+	/// </param>
+	public ELoadResult Load<T>(out T model, out string loadLog) 
+		where T: class, IBlahSaveModelVersion
 	{
 		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
-		
-		var log = "load; ";
 
 		model = null;
-		var result = _saveLoad.TryLoad(ref model, ref log);
-
+		
+		var result = _saveLoad.TryLoad(ref model, out loadLog);
 		switch (result)
 		{
+			case ELoadResult.NoSaves:
 			case ELoadResult.MainLoaded:
-				EvLogInfo?.Invoke(log);
+				EvLogInfo?.Invoke($"load; {result}; {loadLog}");
 				break;
-			case ELoadResult.MainLoadedNull:
-				EvLogError?.Invoke(log);
-				break;
-			case ELoadResult.BackupLoaded:
-				EvLogWarning?.Invoke(log);
-				break;
-			case ELoadResult.BackupLoadedNull:
-				EvLogError?.Invoke(log);
-				break;
-			case ELoadResult.SaveLost:
-				EvLogError?.Invoke(log);
-				break;
-			case ELoadResult.NoSave:
-				EvLogInfo?.Invoke(log);
+			case ELoadResult.BackupNewerLoaded:
+			case ELoadResult.BackupNewerFailedMainLoaded:
+			case ELoadResult.MainFailedBackupLoaded:
+			case ELoadResult.MainFailedBackupFailed:
+				EvLogInfo?.Invoke($"load; {result}; {loadLog}");
 				break;
 			default:
 				throw new Exception($"{result} is not supported");
 		}
 
-		log = "patch; ";
 		if (model != null)
 		{
-			_patcher.ApplyPatches(model, ref log);
-			EvLogInfo?.Invoke(log);
+			_patcher.ApplyPatches(model, out string patchLog);
+			EvLogInfo?.Invoke($"patch; {patchLog}");
 		}
-
-		model ??= new T();
+		
 		return result;
 	}
 
@@ -92,11 +84,9 @@ public class BlahSaver
 	{
 		_saveLoad.SetTarget(folderName, subFolderName, fileName);
 
-		var log = "load raw; ";
-
 		T model = null;
-		_saveLoad.TryLoad(ref model, ref log);
-		EvLogInfo?.Invoke(log);
+		var result = _saveLoad.TryLoad(ref model, out string loadLog);
+		EvLogInfo?.Invoke($"load raw; {result}; {loadLog}");
 
 		return model;
 	}
@@ -108,11 +98,14 @@ public class BlahSaver
 	public void SaveMain<T>(T model) where T : IBlahSaveModelVersion
 	{
 		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
-        
-		var log = "save main: ";
+
 		model.Version = _currVersion;
-		if (!_saveLoad.TrySaveMain(model, ref log))
-			EvLogError?.Invoke(log);
+
+		bool isSuccess = _saveLoad.TrySaveMain(model, out string log);
+		if (isSuccess)
+			EvLogInfo?.Invoke($"save main; {log}");
+		else
+			EvLogError?.Invoke($"save main; {log}");
 	}
 
 	/// <summary>
@@ -123,10 +116,13 @@ public class BlahSaver
 	{
 		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
 
-		var log = "save backup: ";
 		model.Version = _currVersion;
-		if (!_saveLoad.TrySaveBackup(model, ref log))
-			EvLogError?.Invoke(log);
+
+		bool isSuccess = _saveLoad.TrySaveBackup(model, out string log);
+		if (isSuccess)
+			EvLogInfo?.Invoke($"save main; {log}");
+		else
+			EvLogError?.Invoke($"save main; {log}");
 	}
 
 	/// <summary>

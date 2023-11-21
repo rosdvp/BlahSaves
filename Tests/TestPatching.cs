@@ -27,7 +27,7 @@ public class TestPatching
 		
 		saver.SaveMain(saved);
 
-		loader.LoadOrCreate(out Model loaded);
+		loader.Load(out Model loaded, out _);
 		
 		Assert.AreEqual(5, loaded.IntVal);
 		Assert.AreEqual(true, loaded.BoolVal);
@@ -73,7 +73,7 @@ public class TestPatching
 		
 		saver.SaveMain(saved);
 
-		loader.LoadOrCreate(out Model loaded);
+		loader.Load(out Model loaded, out _);
 		
 		Assert.AreEqual(8, loaded.IntVal);
 		Assert.AreEqual(true, loaded.BoolVal);
@@ -84,15 +84,9 @@ public class TestPatching
 	{
 		if (withSavesDelete)
 			BlahSavesEditor.EditorDeleteAllSaves();
-
-		var saver = new BlahSaver(version);
-		saver.EvLogInfo    += Debug.Log;
-		saver.EvLogWarning += log => throw new Exception(log);
-		saver.EvLogError   += log => throw new Exception(log);
-
-		return saver;
+		return new BlahSaver(version);
 	}
-	
+
 
 	[Serializable]
 	public class Model : IBlahSaveModelVersion

@@ -3,10 +3,10 @@
 public enum ELoadResult
 {
 	MainLoaded,
-	MainLoadedNull,
-	BackupLoaded,
-	BackupLoadedNull,
-	SaveLost,
-	NoSave,
+	BackupNewerLoaded,
+	BackupNewerFailedMainLoaded,
+	MainFailedBackupLoaded,
+	MainFailedBackupFailed,
+	NoSaves,
 }
 }

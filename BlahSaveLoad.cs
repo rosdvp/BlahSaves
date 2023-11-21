@@ -18,33 +18,58 @@ public class BlahSaveLoad
 	private string _currMainFilePath;
 	private string _currBackupFilePath;
 
-	public ELoadResult TryLoad<T>(ref T model, ref string log) where T : class
+	public ELoadResult TryLoad<T>(ref T model, out string log) where T : class
 	{
-		if (IsMainExist())
-		{
-			if (IsBackupExist() && IsBackupNewer())
-			{
-				log += "backup newer: ";
-				if (TryLoadFile(_currBackupFilePath, out model, ref log))
-					return model != null ? ELoadResult.BackupLoaded : ELoadResult.BackupLoadedNull;
-			}
-			log += "main: ";
-			if (TryLoadFile(_currMainFilePath, out model, ref log))
-				return model != null ? ELoadResult.MainLoaded : ELoadResult.MainLoadedNull;
-		}
-		else
-			log += "main: not found; ";
+		bool isMainExist   = IsMainExist();
+		bool isBackupExist = IsBackupExist();
+		bool isBackupNewer = isMainExist && isBackupExist && IsBackupNewer();
 
-		log += "backup: ";
-		if (IsBackupExist())
+		log = "";
+		
+		if (isBackupNewer)
 		{
+			log += "backup newer; ";
 			if (TryLoadFile(_currBackupFilePath, out model, ref log))
-				return model != null ? ELoadResult.BackupLoaded : ELoadResult.BackupLoadedNull;
+				return ELoadResult.BackupNewerLoaded;
+			log += "main; ";
+			if (TryLoadFile(_currMainFilePath, out model, ref log))
+				return ELoadResult.BackupNewerFailedMainLoaded;
+		}
+		else if (isMainExist)
+		{
+			log += "main; ";
+			if (TryLoadFile(_currMainFilePath, out model, ref log))
+				return ELoadResult.MainLoaded;
+			if (isBackupExist)
+			{
+				log += "backup; ";
+				if (TryLoadFile(_currBackupFilePath, out model, ref log))
+					return ELoadResult.MainFailedBackupLoaded;
+			}
+			else
+			{
+				log += "no backup; ";
+			}
+		}
+		else if (isBackupExist)
+		{
+			log += "no main; ";
+			
+			log += "backup; ";
+			if (TryLoadFile(_currBackupFilePath, out model, ref log))
+				return ELoadResult.MainFailedBackupLoaded;
 		}
 		else
-			log += "not found;";
+		{
+			log += "no main; no backup; ";
+		}
 
-		return ShouldAnySaveExist ? ELoadResult.SaveLost : ELoadResult.NoSave;
+		if (ShouldAnySaveExist)
+		{
+			log += "saves lost";
+			return ELoadResult.MainFailedBackupFailed;
+		}
+		return ELoadResult.NoSaves;
 	}
 
 	
@@ -54,22 +79,27 @@ public class BlahSaveLoad
 		{
 			byte[] bytes = File.ReadAllBytes(filePath);
 			model =  SerializationUtility.DeserializeValue<T>(bytes, DataFormat.Binary);
-			log   += "success;";
+			if (model == null)
+			{
+				log += "null; ";
+				return false;
+			}
+			log += "success; ";
 			return true;
 		}
 		catch (Exception e)
 		{
 			model =  default;
-			log   += $"fail: {e.Message};";
+			log   += $"fail: {e.Message}; ";
 			return false;
 		}
 	}
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public bool TrySaveMain<T>(T model, ref string log)
+	public bool TrySaveMain<T>(T model, out string log)
 	{
-		if (TrySaveFile(_currMainFilePath, model, ref log))
+		if (TrySaveFile(_currMainFilePath, model, out log))
 		{
 			PlayerPrefs.SetInt(PP_SAVE_FILE_CREATED, 1);
 			return true;
@@ -77,9 +107,9 @@ public class BlahSaveLoad
 		return false;
 	}
 
-	public bool TrySaveBackup<T>(T model, ref string log)
+	public bool TrySaveBackup<T>(T model, out string log)
 	{
-		if (TrySaveFile(_currBackupFilePath, model, ref log))
+		if (TrySaveFile(_currBackupFilePath, model, out log))
 		{
 			PlayerPrefs.SetInt(PP_SAVE_FILE_CREATED, 1);
 			return true;
@@ -87,18 +117,18 @@ public class BlahSaveLoad
 		return false;
 	}
 	
-	private bool TrySaveFile<T>(string filePath, T model, ref string log)
+	private bool TrySaveFile<T>(string filePath, T model, out string log)
 	{
 		try
 		{
 			byte[] bytes = SerializationUtility.SerializeValue(model, DataFormat.Binary);
 			File.WriteAllBytes(filePath, bytes);
-			log += "success;";
+			log = "success;";
 			return true;
 		}
 		catch (Exception e)
 		{
-			log += $"fail: {e.Message};";
+			log = $"fail: {e.Message};";
 			return false;
 		}
 	}
