@@ -59,7 +59,7 @@ public class BlahSaver
 			case ELoadResult.BackupNewerFailedMainLoaded:
 			case ELoadResult.MainFailedBackupLoaded:
 			case ELoadResult.MainFailedBackupFailed:
-				EvLogInfo?.Invoke($"load; {result}; {loadLog}");
+				EvLogError?.Invoke($"load; {result}; {loadLog}");
 				break;
 			default:
 				throw new Exception($"{result} is not supported");
