@@ -120,9 +120,9 @@ public class BlahSaver
 
 		bool isSuccess = _saveLoad.TrySaveBackup(model, out string log);
 		if (isSuccess)
-			EvLogInfo?.Invoke($"save main; {log}");
+			EvLogInfo?.Invoke($"save backup; {log}");
 		else
-			EvLogError?.Invoke($"save main; {log}");
+			EvLogError?.Invoke($"save backup; {log}");
 	}
 
 	/// <summary>
