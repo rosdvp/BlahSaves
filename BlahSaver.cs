@@ -7,27 +7,20 @@ public class BlahSaver
 	private const string SAVE_FILE_NAME = "save.bdt";
 	
 	private readonly BlahSaveLoad _saveLoad = new();
-	private readonly BlahPatcher  _patcher = new();
+	private readonly BlahPatcher  _patcher  = new();
 
-	private readonly string _currVersion;
-
-	public BlahSaver(string currVersion)
-	{
-		_currVersion = currVersion;
-	}
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public event Action<string> EvLogInfo;
 	public event Action<string> EvLogError;
-	
+
 	/// <summary>
-	/// If loaded model version is <paramref name="fromVersion"/>,
-	/// the <paramref name="action"/> will be invoked.
-	/// The version of model will become <paramref name="toVersion"/> and the pipeline will go further.
+	/// All patches will be applied in the order they are added.
 	/// </summary>
-	/// <param name="action">Cast object to model type and perform required modifications.</param>
-	public void AddPatch(string fromVersion, string toVersion, Action<object> action)
-		=> _patcher.AddPatch(fromVersion, toVersion, action);
+	/// <param name="name">Name for logs.</param>
+	/// <param name="func">Func that must return true if patch is applied and false otherwise.</param>
+	public void AddPatch(string name, Func<IBlahSaveModel, bool> func)
+		=> _patcher.AddPatch(name, func);
 
 	/// <summary>
 	/// Tries to load the model from main save or backup.<br/>
@@ -42,7 +35,7 @@ public class BlahSaver
 	/// Duplicates <see cref="EvLogInfo"/> and <see cref="EvLogError"/>.
 	/// </param>
 	public ELoadResult Load<T>(out T model, out string loadLog) 
-		where T: class, IBlahSaveModelVersion
+		where T: class, IBlahSaveModel
 	{
 		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
 
@@ -68,6 +61,7 @@ public class BlahSaver
 		if (model != null)
 		{
 			_patcher.ApplyPatches(model, out string patchLog);
+			loadLog += $"\npatch; {patchLog}";
 			EvLogInfo?.Invoke($"patch; {patchLog}");
 		}
 		
@@ -95,11 +89,9 @@ public class BlahSaver
 	/// Saves model to main save file.<br/>
 	/// Model's version will be set automatically.
 	/// </summary>
-	public void SaveMain<T>(T model) where T : IBlahSaveModelVersion
+	public void SaveMain<T>(T model) where T : IBlahSaveModel
 	{
 		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
-
-		model.Version = _currVersion;
 
 		bool isSuccess = _saveLoad.TrySaveMain(model, out string log);
 		if (isSuccess)
@@ -112,11 +104,9 @@ public class BlahSaver
 	/// Saves model to backup save file.<br/>
 	/// Model's version will be set automatically.
 	/// </summary>
-	public void SaveBackup<T>(T model) where T : IBlahSaveModelVersion
+	public void SaveBackup<T>(T model) where T : IBlahSaveModel
 	{
 		_saveLoad.SetTarget(null, null, SAVE_FILE_NAME);
-
-		model.Version = _currVersion;
 
 		bool isSuccess = _saveLoad.TrySaveBackup(model, out string log);
 		if (isSuccess)

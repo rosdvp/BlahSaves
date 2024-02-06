@@ -12,7 +12,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
         
 		var result = saver.Load(out Model loaded, out _);
 		
@@ -25,7 +25,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveMain(new Model {IntVal = 5});
 		var result = saver.Load(out Model loaded, out _);
@@ -39,7 +39,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveBackup(new Model() { IntVal = 5});
 		saver.SaveMain(new Model() { IntVal = 10});
@@ -57,7 +57,7 @@ public class TestSaveLoad
 
 		string logWarning = null;
 		
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveBackup(new Model { IntVal = 5 });
 		
@@ -74,7 +74,7 @@ public class TestSaveLoad
 
 		string logWarning = null;
 		
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveBackup(new Model { IntVal = 10 });
 		saver.SaveMain(new Model { IntVal   = 5 });
@@ -92,7 +92,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveMain(new WrongModel());
 		
@@ -107,7 +107,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveBackup(new Model { IntVal = 5 });
 		saver.SaveMain(new WrongModel());
@@ -123,7 +123,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 		
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveMain(new Model { IntVal   = 5 });
 		saver.SaveBackup(new Model { IntVal = 10 });
@@ -142,7 +142,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveMain(new Model { IntVal   = 5});
 		saver.SaveBackup(new Model { IntVal = 10 });
@@ -158,7 +158,7 @@ public class TestSaveLoad
 	{
 		BlahSavesEditor.EditorDeleteAllSaves();
 
-		var saver = new BlahSaver("0");
+		var saver = new BlahSaver();
 
 		saver.SaveMain(new Model { IntVal = 5 });
 		saver.SaveBackup(new WrongModel());
@@ -172,7 +172,7 @@ public class TestSaveLoad
 	
 
 	[Serializable]
-	public class Model : IBlahSaveModelVersion
+	public class Model : IBlahSaveModel
 	{
 		public int IntVal;
 		
@@ -186,7 +186,7 @@ public class TestSaveLoad
 	}
 
 	[Serializable]
-	public class WrongModel : IBlahSaveModelVersion
+	public class WrongModel : IBlahSaveModel
 	{
 		[SerializeField]
 		private string _version;

@@ -9,99 +9,101 @@ public class TestPatching
 	[Test]
 	public void TestOnePatch_Patched()
 	{
-		var saver = PrepareSaver("0", true);
-
-		var loader = PrepareSaver("1", false);
-		loader.AddPatch("0",
-		                "1",
-		                rawModel =>
-		                {
-			                if (rawModel is Model model)
-				                model.BoolVal = true;
-		                }
-		);
-		
 		var saved = new Model();
 		saved.IntVal  = 5;
 		saved.BoolVal = false;
-		
+
+		var saver = PrepareSaver(true);
 		saver.SaveMain(saved);
 
-		loader.Load(out Model loaded, out _);
+		saver.AddPatch(
+			"p1",
+			rawModel =>
+			{
+				if (rawModel is Model model && model.BoolVal == false)
+				{
+					model.BoolVal = true;
+					return true;
+				}
+				return false;
+			}
+		);
+		saver.Load(out Model loaded, out string log);
+		
+		Debug.Log(log);
 		
 		Assert.AreEqual(5, loaded.IntVal);
 		Assert.AreEqual(true, loaded.BoolVal);
 	}
-	
+
 	[Test]
 	public void TestThreePatches_Patched()
 	{
-		var saver = PrepareSaver("0", true);
-
-		var loader = PrepareSaver("3", false);
-		loader.AddPatch("0",
-		                "1",
-		                rawModel =>
-		                {
-			                if (rawModel is Model model)
-				                model.IntVal = 6;
-		                }
-		);
-		loader.AddPatch("1",
-		                "2",
-		                rawModel =>
-		                {
-			                if (rawModel is Model model)
-				                model.IntVal = 7;
-		                }
-		);
-		loader.AddPatch("2",
-		                "3",
-		                rawModel =>
-		                {
-			                if (rawModel is Model model)
-			                {
-				                model.IntVal  = 8;
-				                model.BoolVal = true;
-			                }
-		                }
-		);
-		
 		var saved = new Model();
 		saved.IntVal  = 5;
 		saved.BoolVal = false;
-		
+
+		var saver = PrepareSaver(true);
 		saver.SaveMain(saved);
 
-		loader.Load(out Model loaded, out _);
+		saver.AddPatch(
+			"p1",
+			rawModel =>
+			{
+				if (rawModel is Model model && model.IntVal == 4)
+				{
+					model.IntVal = 3;
+					return true;
+				}
+				return false;
+			}
+		);
+		saver.AddPatch(
+			"p2",
+			rawModel =>
+			{
+				if (rawModel is Model model && model.IntVal == 5)
+				{
+					model.IntVal = 6;
+					return true;
+				}
+				return false;
+			}
+		);
+		saver.AddPatch(
+			"p3",
+			rawModel =>
+			{
+				if (rawModel is Model model && model.IntVal == 6)
+				{
+					model.IntVal = 7;
+					return true;
+				}
+				return false;
+			}
+		);
+		saver.Load(out Model loaded, out string log);
 		
-		Assert.AreEqual(8, loaded.IntVal);
-		Assert.AreEqual(true, loaded.BoolVal);
+		Debug.Log(log);
+
+		Assert.AreEqual(7, loaded.IntVal);
+		Assert.AreEqual(false, loaded.BoolVal);
 	}
 
 
-	private BlahSaver PrepareSaver(string version, bool withSavesDelete)
+	private BlahSaver PrepareSaver(bool withSavesDelete)
 	{
 		if (withSavesDelete)
 			BlahSavesEditor.EditorDeleteAllSaves();
-		return new BlahSaver(version);
+		return new BlahSaver();
 	}
 
 
 	[Serializable]
-	public class Model : IBlahSaveModelVersion
+	public class Model : IBlahSaveModel
 	{
 		public int  IntVal;
 		public bool BoolVal;
-
-		[SerializeField]
-		private string _version;
-
-		public string Version
-		{
-			get => _version;
-			set => _version = value;
-		}
 	}
 }
 }
