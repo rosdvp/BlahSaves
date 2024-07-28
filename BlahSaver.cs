@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace BlahSaves
 {
@@ -128,6 +129,20 @@ public class BlahSaver
 	}
 	
 	/// <returns>Available space in megabytes on hard drive.</returns>
-	public float GetAvailableSpaceMbOnDisk() => BlahSavesHelper.GetSpaceMb();
+	public bool TryGetAvailableSpaceMbOnDisk(out float mb, out string error)
+	{
+		try
+		{
+			mb    = BlahSavesHelper.GetSpaceMb();
+			error = default;
+			return true;
+		}
+		catch (Exception e)
+		{
+			error = $"{e.Message}; {e.StackTrace}";
+		}
+		mb = default;
+		return false;
+	}
 }
 }
